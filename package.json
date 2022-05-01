@@ -4,10 +4,10 @@
   "description": "ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408 created by GitHub Classroom",
   "main": "index.js",
   "scripts": {
-    "coverage": "nyc npm test && nyc report --reporter=text-lcov | coveralls && rm -rf .nyc_outout",
+    "coverage": "nyc npm test && nyc report --reporter=lcov",
+    "doc": "typedoc",
     "test": "mocha",
-    "start": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "doc": "typedoc"
+    "start": "tsc-watch --onSuccess \"node dist/index.js\""
   },
   "repository": {
     "type": "git",
