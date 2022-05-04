@@ -115,4 +115,10 @@ export class Note {
         break;
     }
   }
+
+  noteToJSON():string {
+    return '{\n\"title\": \"' + this.title + '\",\n\"body\": \"'+ this.body +
+    '\",\n\"color\": \"' + this.color + '\"\n}';
+  }
 };
+
