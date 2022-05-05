@@ -1,6 +1,6 @@
 import {Note, ColorNotes} from './note';
 import * as fs from 'fs';
-import * as chalk from 'chalk';
+// import * as chalk from 'chalk';
 
 /**
  * Clase encargada de especificar los usuarios y sus operaciones en el sistema.
@@ -24,16 +24,16 @@ export class User {
    */
   addNote(user: string, title: string, body: string, Color: ColorNotes): boolean {
     let finish: boolean = true;
-    if (fs.existsSync(`db/${user}`) == false) {
+    if (fs.existsSync(`database/${user}`) == false) {
       console.log('Creando el fichero del usuario');
-      fs.mkdirSync(`db/${user}`, {recursive: true});
+      fs.mkdirSync(`database/${user}`, {recursive: true});
     }
     const nota = new Note(title, body, Color);
-    if (fs.existsSync(`db/${user}/${title}.json`) == false) {
-      fs.writeFileSync(`db/${user}/${title}.json`, nota.noteToJSON());
-      console.log(chalk.green('Nota creada correctamente!'));
+    if (fs.existsSync(`database/${user}/${title}.json`) == false) {
+      fs.writeFileSync(`database/${user}/${title}.json`, nota.noteToJSON());
+      console.log('Nota creada correctamente!');
     } else {
-      console.log(chalk.red('La Nota ya existe'));
+      console.log('La Nota ya existe');
       finish = false;
     }
     return finish;
