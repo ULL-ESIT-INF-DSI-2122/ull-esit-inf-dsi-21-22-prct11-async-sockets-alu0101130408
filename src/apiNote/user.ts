@@ -85,24 +85,19 @@ export class User {
     }
     return finish;
   }
-
-  printTitles(): void {
-    console.log(">> Notas de " + this.userName + ":");
-    this.Notes.forEach((item) => {
-      item.printTitle();
+  */
+  printTitles(user:string): Note[] {
+    const listNotes: Note[] = [];
+    fs.readdirSync(`database/${user}`).forEach((notes) => {
+      const readDir = fs.readFileSync(`database/${user}/${notes}`);
+      const notaFormatJson = JSON.parse(readDir.toString());
+      const nota = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
+      listNotes.push(nota);
     });
+    return listNotes;
   }
 
   printNotes(title : string): void {
-    const check: [boolean, Note] = this.exist(title);
-    if (check[0]) {
-      console.log(`────────────────────────────────`);
-      check[1].printTitle();
-      check[1].printBody();
-      console.log(`────────────────────────────────`);
-    } else {
-      console.log(chalk.red.bold.inverse('Ha introducido mal el titulo o no existe la nota con ese titulo'));
-    }
+
   }
-  */
 }
