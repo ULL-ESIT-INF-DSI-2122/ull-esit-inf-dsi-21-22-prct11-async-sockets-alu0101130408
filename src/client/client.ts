@@ -16,12 +16,7 @@ clientMSEC.on('message', (message)=>{
         console.log(chalk.red('No se pudo añadir la nota'));
       }
       break;
-    case 'delete':
-      if (message.success) {
-        console.log(chalk.green('Nota eliminada'));
-      } else {
-        console.log(chalk.red('No se pudo eliminar la nota'));
-      }
+    case 'list':
       break;
   }
 });

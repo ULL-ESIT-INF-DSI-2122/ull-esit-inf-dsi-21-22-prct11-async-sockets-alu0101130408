@@ -86,18 +86,4 @@ export class User {
     return finish;
   }
   */
-  printTitles(user:string): Note[] {
-    const listNotes: Note[] = [];
-    fs.readdirSync(`database/${user}`).forEach((notes) => {
-      const readDir = fs.readFileSync(`database/${user}/${notes}`);
-      const notaFormatJson = JSON.parse(readDir.toString());
-      const nota = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
-      listNotes.push(nota);
-    });
-    return listNotes;
-  }
-
-  printNotes(title : string): void {
-
-  }
 }

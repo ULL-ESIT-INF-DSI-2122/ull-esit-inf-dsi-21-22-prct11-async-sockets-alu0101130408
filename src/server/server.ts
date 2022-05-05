@@ -40,21 +40,8 @@ net.createServer({allowHalfOpen: true}, (connection) => {
       }
         break;
       case 'list': {
-        const out = noteOption.printTitles(message.user);
-        const list: string[] = [];
-        out.forEach((item) => {
-          list.push(item.noteToJSON());
-        });
-        connection.write(`${JSON.stringify(({type: 'list', success: true,
-          notas: list}))}\n`, (err) => {
-          if (err) {
-            console.log(`Error al finalizar la conexion`);
-          } else {
-            connection.end();
-          }
-        });
-      }
         break;
+      }
     }
   });
 
