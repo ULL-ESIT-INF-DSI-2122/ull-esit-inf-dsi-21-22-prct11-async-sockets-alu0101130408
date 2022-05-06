@@ -69,6 +69,23 @@ net.createServer({allowHalfOpen: true}, (connection) => {
       }
         break;
       case 'read': {
+        const status = noteOption.readNote(message.user, message.title);
+        const responseData: ResponseType = {
+          type: 'read',
+          success: true,
+        };
+        if (typeof status === 'boolean') {
+          responseData.success = false;
+        } else {
+          responseData.notes = [status.noteToJSON()];
+        }
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
       }
         break;
       case 'list': {

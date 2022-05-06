@@ -66,20 +66,17 @@ export class User {
     return finish;
   }
 
-  /*
-  modifyNoteColor(title: string, colorToModify: ColorNotes): boolean {
+  readNote(user: string, title: string): Note | boolean {
     let finish: boolean = false;
-    const check: [boolean, Note] = this.exist(title);
-    if (check[0]) {
-      const index = this.Notes.indexOf(check[1]);
-      this.Notes[index].setColor(colorToModify);
-      finish = true;
-      console.log(chalk.green.bold.inverse('Se ha modificado el color de la nota'));
+    if (fs.existsSync(`database/${user}/${title}.json`) == true) {
+      const content = fs.readFileSync(`database/${user}/${title}.json`);
+      const notaFormatJson = JSON.parse(content.toString());
+      const nota = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
+      return nota;
     } else {
-      console.log(chalk.red.bold.inverse('No existe la nota a modificar'));
+      console.log(`La nota a leer no existe`);
+      finish = false;
     }
     return finish;
   }
-
-  */
 }

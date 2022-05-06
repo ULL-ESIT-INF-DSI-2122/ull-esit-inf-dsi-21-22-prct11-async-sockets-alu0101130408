@@ -1,5 +1,5 @@
 import * as yargs from 'yargs';
-import chalk from "chalk";
+import * as chalk from 'chalk';
 import {RequestType} from '../type';
 import {connect} from 'net';
 import {MessageEventEmitterClient} from './event';
@@ -31,6 +31,14 @@ clientMSEC.on('message', (message)=>{
       }
       break;
     case 'read':
+      if (message.success) {
+        const nota = message.notes[0];
+        const noteObject = JSON.parse(nota);
+        console.log(chalk.keyword(noteObject.color)('Title:'+ noteObject.title));
+        console.log(chalk.keyword(noteObject.color)('Body:'+ noteObject.body));
+      } else {
+        console.log(chalk.red('No se pudo leer la nota'));
+      }
       break;
     case 'list':
       break;
@@ -148,6 +156,37 @@ yargs.command({
         color: argv.color,
       };
       console.log('Opcion: Modificar');
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+
+yargs.command({
+  command: 'read',
+  describe: 'Lee una nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string') {
+      const inputData: RequestType = {
+        type: 'read',
+        user: argv.user,
+        title: argv.title,
+      };
+      console.log('Opcion: Leer');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.red(`Error: Los argumentos no son válidos`));
