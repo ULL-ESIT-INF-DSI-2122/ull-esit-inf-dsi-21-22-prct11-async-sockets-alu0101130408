@@ -22,13 +22,13 @@ export class User {
    * @param Color color de la nota definida en modulo Chark
    * @returns devuelve un booleano que define true si se ha añadido o false si ha pasado algo mal.
    */
-  addNote(user: string, title: string, body: string, Color: ColorNotes): boolean {
+  addNote(user: string, title: string, body: string, Color: string): boolean {
     let finish: boolean = true;
     if (fs.existsSync(`database/${user}`) == false) {
       console.log('Creando el fichero del usuario');
       fs.mkdirSync(`database/${user}`, {recursive: true});
     }
-    const nota = new Note(title, body, Color);
+    const nota = new Note(title, body, Color as ColorNotes);
     if (fs.existsSync(`database/${user}/${title}.json`) == false) {
       fs.writeFileSync(`database/${user}/${title}.json`, nota.noteToJSON());
       console.log('Nota creada correctamente!');
@@ -39,22 +39,34 @@ export class User {
     return finish;
   }
 
-  /*
-  modifyNote(title: string, bodyToModify: string): boolean {
-    let finish: boolean = false;
-    const check: [boolean, Note] = this.exist(title);
-    if (check[0]) {
-      const index = this.Notes.indexOf(check[1]);
-      this.Notes[index].setBody(bodyToModify);
-      finish = true;
-      console.log(chalk.green.bold.inverse('Se ha modificado el cuerpo de la nota'));
+  deleteNote(user: string, title: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}/${title}.json`)== true) {
+      fs.rmSync(`database/${user}/${title}.json`);
+      console.log('Nota eliminada correctamente!');
     } else {
-      console.log(chalk.red.bold.inverse('No existe la nota a modificar'));
+      console.log('La nota no se ha podido eliminar');
+      finish = false;
     }
     return finish;
   }
 
+  modifyNote(user: string, title: string, bodyToModify: string, colorToModify: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}/${title}.json`) == true) {
+      const nota = new Note(title, bodyToModify, colorToModify as ColorNotes);
+      if (fs.existsSync(`db/${user}/${title}.json`) == false) {
+        fs.writeFileSync(`database/${user}/${title}.json`, nota.noteToJSON());
+        console.log('Nota creada correctamente!');
+      }
+    } else {
+      console.log('No existe la nota a modificar');
+      finish = false;
+    }
+    return finish;
+  }
 
+  /*
   modifyNoteColor(title: string, colorToModify: ColorNotes): boolean {
     let finish: boolean = false;
     const check: [boolean, Note] = this.exist(title);
@@ -70,15 +82,4 @@ export class User {
   }
 
   */
-  deleteNote(user: string, title: string): boolean {
-    let finish: boolean = true;
-    if (fs.existsSync(`database/${user}/${title}.json`)== true) {
-      fs.rmSync(`database/${user}/${title}.json`);
-      console.log('Nota eliminada correctamente!');
-    } else {
-      console.log('La nota no se ha podido eliminar');
-      finish = false;
-    }
-    return finish;
-  }
 }

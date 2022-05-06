@@ -54,6 +54,18 @@ net.createServer({allowHalfOpen: true}, (connection) => {
       }
         break;
       case 'modify': {
+        const status = noteOption.modifyNote(message.user, message.title, message.body, message.color);
+        const responseData: ResponseType = {
+          type: 'modify',
+          success: status,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
       }
         break;
       case 'read': {

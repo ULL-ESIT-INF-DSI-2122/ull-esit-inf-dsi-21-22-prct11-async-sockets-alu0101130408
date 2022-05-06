@@ -113,4 +113,46 @@ yargs.command({
   },
 });
 
+yargs.command({
+  command: 'modify',
+  describe: 'Modificar del cuerpo de nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+    body: {
+      describe: 'Cuerpo',
+      demandOption: true,
+      type: 'string',
+    },
+    color: {
+      describe: 'Color',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string' && typeof argv.body === 'string' && typeof argv.color === 'string') {
+      const inputData: RequestType = {
+        type: 'modify',
+        user: argv.user,
+        title: argv.title,
+        body: argv.body,
+        color: argv.color,
+      };
+      console.log('Opcion: Modificar');
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
 yargs.parse();
