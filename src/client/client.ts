@@ -16,7 +16,26 @@ clientMSEC.on('message', (message)=>{
         console.log(chalk.red('No se pudo añadir la nota'));
       }
       break;
+    case 'delete':
+      if (message.success) {
+        console.log(chalk.green('Nota eliminada'));
+      } else {
+        console.log(chalk.red('No se puedo eliminar la nota'));
+      }
+      break;
+    case 'modify':
+      if (message.success) {
+        console.log(chalk.green('Nota modificada'));
+      } else {
+        console.log(chalk.red('No se puedo modificar la nota'));
+      }
+      break;
+    case 'read':
+      break;
     case 'list':
+      break;
+    default:
+      console.log(chalk.red('No es una opcion soportada'));
       break;
   }
 });
@@ -57,6 +76,36 @@ yargs.command({
         color: argv.color,
       };
       console.log(`Opcion: Añadir`);
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+yargs.command({
+  command: 'delete',
+  describe: 'Elimina una nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string') {
+      const inputData: RequestType = {
+        type: 'delete',
+        user: argv.user,
+        title: argv.title,
+      };
+      console.log(`OPcion: Eliminar`);
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.red(`Error: Los argumentos no son válidos`));

@@ -24,8 +24,7 @@ net.createServer({allowHalfOpen: true}, (connection) => {
     console.log(chalk.bgWhite.magenta.bold('Peticion realizada >> ' + message.type));
     switch (message.type) {
       case 'add': {
-        const status = noteOption.addNote(message.user, message.title, message.body,
-            message.color);
+        const status = noteOption.addNote(message.user, message.title, message.body, message.color);
         const responseData: ResponseType = {
           type: 'add',
           success: status,
@@ -39,9 +38,30 @@ net.createServer({allowHalfOpen: true}, (connection) => {
         });
       }
         break;
-      case 'list': {
-        break;
+      case 'delete': {
+        const status = noteOption.deleteNote(message.user, message.title);
+        const responseData: ResponseType = {
+          type: 'delete',
+          success: status,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
       }
+        break;
+      case 'modify': {
+      }
+        break;
+      case 'read': {
+      }
+        break;
+      case 'list': {
+      }
+        break;
     }
   });
 

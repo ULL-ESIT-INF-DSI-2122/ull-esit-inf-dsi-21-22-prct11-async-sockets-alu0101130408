@@ -69,21 +69,16 @@ export class User {
     return finish;
   }
 
-
-  deleteNote(title: string): boolean {
-    let finish: boolean = false;
-    const check: [boolean, Note] = this.exist(title);
-    if (check[0]) {
-      const index = this.Notes.indexOf(check[1]);
-      if (index > -1) {
-        this.Notes.splice(index, 1);
-        finish = true;
-        console.log(chalk.green.bold.inverse(`Se ha eliminado la nota con titulo ${title}`));
-      }
+  */
+  deleteNote(user: string, title: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}/${title}.json`)== true) {
+      fs.rmSync(`database/${user}/${title}.json`);
+      console.log('Nota eliminada correctamente!');
     } else {
-      console.log(chalk.red.bold.inverse('Ha introducido mal el titulo o no existe la nota con ese titulo'));
+      console.log('La nota no se ha podido eliminar');
+      finish = false;
     }
     return finish;
   }
-  */
 }

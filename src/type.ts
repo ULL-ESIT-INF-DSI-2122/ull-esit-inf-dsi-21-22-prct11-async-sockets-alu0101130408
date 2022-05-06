@@ -2,7 +2,7 @@
  * Definimos el tipo de datos de las peticiones
  */
 export type RequestType = {
-  type: 'add' | 'update' | 'remove' | 'read' | 'list';
+  type: 'add' | 'update' | 'delete' | 'read' | 'list';
   user: string;
   title?: string;
   body?: string;
@@ -13,7 +13,7 @@ export type RequestType = {
  * Definimos el tipo de datos de las respuestas
  */
 export type ResponseType = {
-  type: 'add' | 'update' | 'remove' | 'read' | 'list';
+  type: 'add' | 'update' | 'delete' | 'read' | 'list';
   success: boolean; // True ok, false not ok
   notes?: string[];
 }
