@@ -79,4 +79,15 @@ export class User {
     }
     return finish;
   }
+
+  listNoteUser(user: string): Note[] {
+    const listNotes: Note[] = [];
+    fs.readdirSync(`database/${user}`).forEach((nota) => {
+      const content = fs.readFileSync(`database/${user}/${nota}`);
+      const notaFormatJson = JSON.parse(content.toString());
+      const notes = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
+      listNotes.push(notes);
+    });
+    return listNotes;
+  }
 }

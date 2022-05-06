@@ -89,6 +89,23 @@ net.createServer({allowHalfOpen: true}, (connection) => {
       }
         break;
       case 'list': {
+        const salida = noteOption.listNoteUser(message.user);
+        const salidaFormateada: string[]= [];
+        salida.forEach((item) => {
+          salidaFormateada.push(item.noteToJSON());
+        });
+        const responseData: ResponseType = {
+          type: 'list',
+          success: true,
+          notes: salidaFormateada,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
       }
         break;
     }

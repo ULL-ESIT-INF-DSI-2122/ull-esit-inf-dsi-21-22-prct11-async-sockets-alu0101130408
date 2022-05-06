@@ -42,6 +42,15 @@ clientMSEC.on('message', (message)=>{
       }
       break;
     case 'list':
+      if (message.success) {
+        const info: string[] = message.notes;
+        info.forEach( (item) => {
+          const notaObject = JSON.parse(item);
+          console.log(notaObject.title);
+        });
+      } else {
+        console.log(chalk.default.red('No se pudo listar las notas'));
+      }
       break;
     default:
       console.log(chalk.default.red('No es una opcion soportada'));
@@ -188,6 +197,31 @@ yargs.command({
         title: argv.title,
       };
       console.log('Opcion: Leer');
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+
+yargs.command({
+  command: 'list',
+  describe: 'Lista las notas del usuario',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string') {
+      const inputData: RequestType = {
+        type: 'list',
+        user: argv.user,
+      };
+      console.log('Opcion: Listar');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
