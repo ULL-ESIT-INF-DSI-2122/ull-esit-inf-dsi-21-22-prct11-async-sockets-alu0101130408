@@ -11,39 +11,40 @@ clientMSEC.on('message', (message)=>{
   switch (message.type) {
     case 'add':
       if (message.success) {
-        console.log(chalk.green('Nota añadida'));
+        console.log(chalk.default.green('Nota añadida'));
       } else {
-        console.log(chalk.red('No se pudo añadir la nota'));
+        console.log(chalk.default.red('No se pudo añadir la nota'));
       }
       break;
     case 'delete':
       if (message.success) {
-        console.log(chalk.green('Nota eliminada'));
+        console.log(chalk.default.green('Nota eliminada'));
       } else {
-        console.log(chalk.red('No se puedo eliminar la nota'));
+        console.log(chalk.default.red('No se puedo eliminar la nota'));
       }
       break;
     case 'modify':
       if (message.success) {
-        console.log(chalk.green('Nota modificada'));
+        console.log(chalk.default.green('Nota modificada'));
       } else {
-        console.log(chalk.red('No se puedo modificar la nota'));
+        console.log(chalk.default.red('No se puedo modificar la nota'));
       }
       break;
     case 'read':
       if (message.success) {
         const nota = message.notes[0];
         const noteObject = JSON.parse(nota);
-        console.log(chalk.keyword(noteObject.color)('Title:'+ noteObject.title));
-        console.log(chalk.keyword(noteObject.color)('Body:'+ noteObject.body));
+        console.log(`color: ` + noteObject.color);
+        console.log(`title: ` + noteObject.title);
+        console.log(`body: ` + noteObject.body);
       } else {
-        console.log(chalk.red('No se pudo leer la nota'));
+        console.log(chalk.default.red('No se pudo leer la nota'));
       }
       break;
     case 'list':
       break;
     default:
-      console.log(chalk.red('No es una opcion soportada'));
+      console.log(chalk.default.red('No es una opcion soportada'));
       break;
   }
 });
@@ -86,7 +87,7 @@ yargs.command({
       console.log(`Opcion: Añadir`);
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
-      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
     }
   },
 });
@@ -116,7 +117,7 @@ yargs.command({
       console.log(`OPcion: Eliminar`);
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
-      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
     }
   },
 });
@@ -158,7 +159,7 @@ yargs.command({
       console.log('Opcion: Modificar');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
-      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
     }
   },
 });
@@ -189,7 +190,7 @@ yargs.command({
       console.log('Opcion: Leer');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
-      console.log(chalk.red(`Error: Los argumentos no son válidos`));
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
     }
   },
 });

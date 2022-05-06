@@ -69,13 +69,13 @@ export class User {
   readNote(user: string, title: string): Note | boolean {
     let finish: boolean = false;
     if (fs.existsSync(`database/${user}/${title}.json`) == true) {
-      const content = fs.readFileSync(`database/${user}/${title}.json`);
-      const notaFormatJson = JSON.parse(content.toString());
+      const info = fs.readFileSync(`database/${user}/${title}.json`);
+      const notaFormatJson = JSON.parse(info.toString());
       const nota = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
       return nota;
     } else {
       console.log(`La nota a leer no existe`);
-      finish = false;
+      finish = true;
     }
     return finish;
   }
