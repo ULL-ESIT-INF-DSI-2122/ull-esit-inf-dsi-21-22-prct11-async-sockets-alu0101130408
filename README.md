@@ -19,13 +19,13 @@ Para ejecutar el código, tras ejecutar el comando tsc en la terminal, Se debe a
 `node dist/client/client.js add --user="Joel" --title="TituloNota" --body="este es el cuerpo" --color="Red"`
 
 
-> Para acceder al informe de la práctica 11 piche [aquí]()
+> Para acceder al informe de la práctica 11 piche [aquí](https://github.com/ULL-ESIT-INF-DSI-2122/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/blob/main/docs/index.md)
 
-> Para acceder al informe a través de Github Pages, pinche [aquí]() o acceda a través del siguiente enlace: 
+> Para acceder al informe a través de Github Pages, pinche [aquí](https://ull-esit-inf-dsi-2122.github.io/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/) o acceda a través del siguiente enlace: https://ull-esit-inf-dsi-2122.github.io/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/
 
 > Si desea acceder a la documentación de Typedoc puede acceder a través de la extensión Live Server ejecutando el siguiente.
 
-> [Guión de la Práctica 11]() 
+> [Guión de la Práctica 11](https://ull-esit-inf-dsi-2122.github.io/prct11-async-sockets/) 
 
 
 [![Tests](https://github.com/ULL-ESIT-INF-DSI-2122/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/ULL-ESIT-INF-DSI-2122/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/actions/workflows/node.js.yml)
