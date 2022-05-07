@@ -34,9 +34,28 @@ clientMSEC.on('message', (message)=>{
       if (message.success) {
         const nota = message.notes[0];
         const noteObject = JSON.parse(nota);
-        console.log(`color: ` + noteObject.color);
-        console.log(`title: ` + noteObject.title);
-        console.log(`body: ` + noteObject.body);
+
+        switch (noteObject.color) {
+          case 'Red':
+            console.log(chalk.default.red(`title: ` + noteObject.title));
+            console.log(chalk.default.red(`body: ` + noteObject.body));
+            break;
+          case 'Blue':
+            console.log(chalk.default.blue(`title: ` + noteObject.title));
+            console.log(chalk.default.blue(`body: ` + noteObject.body));
+            break;
+          case 'Green':
+            console.log(chalk.default.green(`title: ` + noteObject.title));
+            console.log(chalk.default.green(`body: ` + noteObject.body));
+            break;
+          case 'Yellow':
+            console.log(chalk.default.yellow(`title: ` + noteObject.title));
+            console.log(chalk.default.yellow(`body: ` + noteObject.body));
+            break;
+          default:
+            console.log(` No es un color válido en el sistema`);
+            break;
+        }
       } else {
         console.log(chalk.default.red('No se pudo leer la nota'));
       }
@@ -44,9 +63,27 @@ clientMSEC.on('message', (message)=>{
     case 'list':
       if (message.success) {
         const info: string[] = message.notes;
+
         info.forEach( (item) => {
-          const notaObject = JSON.parse(item);
-          console.log(notaObject.title);
+          const noteObject = JSON.parse(item);
+          switch (noteObject.color) {
+            case 'Red':
+              console.log(chalk.default.red(noteObject.title));
+              break;
+            case 'Blue':
+              console.log(chalk.default.blue(noteObject.title));
+              break;
+            case 'Green':
+              console.log(chalk.default.green(noteObject.title));
+              break;
+            case 'Yellow':
+              console.log(chalk.default.yellow(noteObject.title));
+
+              break;
+            default:
+              console.log(` No es un color válido en el sistema`);
+              break;
+          }
         });
       } else {
         console.log(chalk.default.red('No se pudo listar las notas'));
@@ -222,11 +259,13 @@ yargs.command({
         user: argv.user,
       };
       console.log('Opcion: Listar');
+      console.log(chalk.default.grey(`Notas del usuario: ${argv.user}`));
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
     }
   },
 });
+
 
 yargs.parse();

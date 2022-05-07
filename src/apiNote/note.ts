@@ -1,4 +1,3 @@
-import chalk from "chalk";
 
 /**
  * Objeto que define los colores que puede tomar una nota.
@@ -68,52 +67,6 @@ export class Note {
    */
   setColor(newColor: ColorNotes): void {
     this.color = newColor;
-  }
-
-  /**
-   * Método que analiza el color de la nota y dependiendo del color muestra el título por consola con ese color a través del modulo chark
-   */
-  printTitle(): void {
-    switch (this.color) {
-      case 'Red':
-        console.log(chalk.red.bold(this.title));
-        break;
-      case 'Green':
-        console.log(chalk.green.bold(this.title));
-        break;
-      case 'Blue':
-        console.log(chalk.blue.bold(this.title));
-        break;
-      case 'Yellow':
-        console.log(chalk.yellow.bold(this.title));
-        break;
-      default:
-        console.log(chalk.red.bold(`No se ha encontrado el color`));
-        break;
-    }
-  }
-
-  /**
-   * Método que analiza el color de la nota y dependiendo del color muestra la información del cuerpo por consola con ese color a través del modulo chark
-   */
-  printBody(): void {
-    switch (this.color) {
-      case 'Red':
-        console.log(chalk.red(this.body));
-        break;
-      case 'Green':
-        console.log(chalk.green(this.body));
-        break;
-      case 'Blue':
-        console.log(chalk.blue(this.body));
-        break;
-      case 'Yellow':
-        console.log(chalk.yellow(this.body));
-        break;
-      default:
-        console.log(chalk.red(`No se ha encontrado el color`));
-        break;
-    }
   }
 
   noteToJSON():string {
