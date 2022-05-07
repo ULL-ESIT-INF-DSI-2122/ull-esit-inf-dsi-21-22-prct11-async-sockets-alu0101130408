@@ -130,7 +130,6 @@ yargs.command({
         body: argv.body,
         color: argv.color,
       };
-      console.log(`Opcion: Añadir`);
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
@@ -160,7 +159,6 @@ yargs.command({
         user: argv.user,
         title: argv.title,
       };
-      console.log(`OPcion: Eliminar`);
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
@@ -202,7 +200,6 @@ yargs.command({
         body: argv.body,
         color: argv.color,
       };
-      console.log('Opcion: Modificar');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
@@ -233,7 +230,6 @@ yargs.command({
         user: argv.user,
         title: argv.title,
       };
-      console.log('Opcion: Leer');
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {
       console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
@@ -258,7 +254,6 @@ yargs.command({
         type: 'list',
         user: argv.user,
       };
-      console.log('Opcion: Listar');
       console.log(chalk.default.grey(`Notas del usuario: ${argv.user}`));
       client.write(`${JSON.stringify(inputData)}\n`);
     } else {

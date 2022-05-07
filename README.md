@@ -7,6 +7,7 @@
 
 ## Introducción:
 
+El objetivo de esta práctica es realizar un cliente y servidor que permita manejar y controlar las diferentes peticiones de la práctica 9 encargada de realizar una aplicación de procesamiento de notas de texto, es decir, añadir, eliminar, modificar, leer y listar. Para realizar esto debemos apoyarnos en el módulo `net` de Node.js que nos proporciona los Sockets.
 
 > Para acceder al informe de la práctica 11 piche [aquí]()
 

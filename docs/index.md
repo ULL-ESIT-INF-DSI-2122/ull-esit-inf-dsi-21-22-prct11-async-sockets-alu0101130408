@@ -34,12 +34,13 @@
 
 ## 1. Introducción y objetivos. <a name="id1"></a>
 
-Introduccion
+El objetivo de esta práctica es realizar un cliente y servidor que permita manejar y controlar las diferentes peticiones de la práctica 9 encargada de realizar una aplicación de procesamiento de notas de texto, es decir, añadir, eliminar, modificar, leer y listar. Para realizar esto debemos apoyarnos en el módulo `net` de Node.js que nos proporciona los Sockets.
 
-Como se ha mencionado se debera hacer uso de X módulos a demás de los módulos necesarios que ya se han visto. Los módulos utilizados en este proyecto por mi parte han sido:
+Como se ha mencionado se debera hacer uso del módulo net para  a demás de los módulos necesarios que ya se han visto. Los módulos utilizados en este proyecto por mi parte han sido:
 
-* **Name1**: Para llevar a cabo la implementación de una base de datos en un fichero *.JSON* que almacene las notas del usuario.
-* **Name2**: Para manejar la visualización con diferentes estilos, formatos y colores la ejecucion de nuestro código.
+* **Net**: Para llevar a cabo la conexión cliente-servidor y el manejo de datos por parte del mismo.
+* **Yargs**: Para obtener por linea de comando las diferentes acciones que se podrán realizar. Añadir, modificar, eliminar, listar y leer.
+* **Chalk**: Para manejar la visualización con diferentes estilos, formatos y colores la ejecucion de nuestro código.
 
 <br/><br/>
 
@@ -47,17 +48,24 @@ Como se ha mencionado se debera hacer uso de X módulos a demás de los módulos
 
 La estructura que se ha adoptado en este proyecto es la siguiente:
 
-* **Carpeta/** : descripcion:
-  * *archivo1.ts*: descripcion
-  * *archivo2.ts*: descripcion
+* **apiNote/** : Recoge toda la funcionalidad encargada de definir la forma de una nota y las operaciones de un usuario.
+  * *note.ts*: Implementa la estructura de una nota en el sistema, es decir, titulo, cuerpo y color.
+  * *user.ts*: Implementa para un usuario dado las opeeraciones que puede realizar, añadir, modificar, eliminar, leer y listar.
 
-* **carpeta/**: descripcion.
+* **client/**: Carpeta que recoge la manipulacion de mensajes y la implementacion del cliente.
+  * **client.ts**: implementa la conexion del cliente y como se procesa las peticiones.
+  * **event.ts**: implementa el manejo de los mensajes fraccionados.
+
+* **server/**: Carpeta que implementa el servidor.
+  * **server.ts**: implementa el servidor y el manejo de las peticiones al mismo.
+
+* **type.ts**: Fichero que implementa las peticiones y respuestas en la aplicación.
 
 A continuación vamos a explicar de forma más detallada estos directorios y ficheros que conforman el proyecto:
 
 ### 2.1. Clase Note. <a name="id21"></a>
 
-La clase `1` es la encargada de descripcion.
+La clase `Note` es la encargada de descripcion.
 
 Para especificar el color que puede tener una nota, definimos un objeto que solo puede contener un color de entre todos los que se pueden implementar.
 
@@ -66,27 +74,264 @@ export type ColorNotes = 'Red' | 'Green' | 'Blue' | 'Yellow';
 ```
 Para implementar la nota definimos la estructura básica que ha de tener,es decir, el titulo de la nota (*string*), el cuerpo de la nota (*string*) y el color de la nota (*ColorNote*).
 
-Posteriormente se definen los métodos de acceso necesarios *Getters y Setter* para poder acceder o obtener los valores de estos atributos privados. Además de estos métodos tambien definimos por un lado **printTitle** que dependiendo del color de la nota que se introdujo a través de un string, muestra por consola a través de chark el titulo con el color que se introdujo. Por otro lado la función **printBody** realiza la misma idea pero con el cuerpo de la nota.
+Posteriormente se definen los métodos de acceso necesarios *Getters y Setter* para poder acceder o obtener los valores de estos atributos privados. Y un método denominado `noteToJsoN` que transforma una nota a un objeto en formato JSON para poder manejar la información en los diversos formatos necesarios para manejar las peticiones.
 
 ```TypeScript
-code
+
+export type ColorNotes = 'Red' | 'Green' | 'Blue' | 'Yellow';
+
+export class Note {
+
+  constructor(private title: string, private body: string, private color: ColorNotes) {
+    this.title = title;
+    this.body = body;
+    this.color = color;
+  }
+
+  geTitle(): string {
+    return this.title;
+  }
+
+  getBody(): string {
+    return this.body;
+  }
+
+  getColor(): ColorNotes {
+    return this.color;
+  }
+
+  seTitle(newTitle: string): void {
+    this.title = newTitle;
+  }
+
+  setBody(newBody: string): void {
+    this.body = newBody;
+  }
+
+  setColor(newColor: ColorNotes): void {
+    this.color = newColor;
+  }
+
+  noteToJSON():string {
+    return '{\n\"title\": \"' + this.title + '\",\n\"body\": \"'+ this.body +
+    '\",\n\"color\": \"' + this.color + '\"\n}';
+  }
+};
+
+
 ```
 Para realizar las pruebas unitarias desarrolladas en la metodologia TDD sobre esta clase `Note`, se define instancian los objetos de la clase nota y se comprueban los métodos de acceso *Getters y Setters*.
 
 ```TypeScript
-test
+import 'mocha';
+import {expect} from 'chai';
+import {Note} from '../src/apiNote/note';
+
+const firstNote: Note = new Note('Primera Nota', 'Esta es la primera nota', 'Red');
+const secondNote: Note = new Note('Segunda Nota', 'Esta es la segunda nota', 'Yellow');
+const thirdNote: Note = new Note('Tercera Nota', 'Esta es la tercera nota', 'Green');
+const fourthNote: Note = new Note('Cuarta Nota', 'Esta es la cuarta nota', 'Blue');
+
+describe('Pruebas Unitarias de la Clase Note', ()=> {
+  it('Prueba de instancia de la clase Note', () =>{
+    expect(firstNote).to.exist;
+    expect(firstNote).not.null;
+    expect(secondNote).to.exist;
+    expect(secondNote).not.null;
+    expect(thirdNote).to.exist;
+    expect(thirdNote).not.null;
+    expect(fourthNote).to.exist;
+    expect(fourthNote).not.null;
+  });
+  it('Prueba de metodos de acceso "Getters" de la clase Note', () =>{
+    expect(firstNote.geTitle()).to.be.eql('Primera Nota');
+    expect(secondNote.geTitle()).to.be.eql('Segunda Nota');
+    expect(thirdNote.geTitle()).to.be.eql('Tercera Nota');
+    expect(fourthNote.geTitle()).to.be.eql('Cuarta Nota');
+
+    expect(firstNote.getBody()).to.be.eql('Esta es la primera nota');
+    expect(secondNote.getBody()).to.be.eql('Esta es la segunda nota');
+    expect(thirdNote.getBody()).to.be.eql('Esta es la tercera nota');
+    expect(fourthNote.getBody()).to.be.eql('Esta es la cuarta nota');
+
+    expect(firstNote.getColor()).to.be.eql('Red');
+    expect(secondNote.getColor()).to.be.eql('Yellow');
+    expect(thirdNote.getColor()).to.be.eql('Green');
+    expect(fourthNote.getColor()).to.be.eql('Blue');
+  });
+
+  it('Prueba de metodos de acceso "Setters" de la clase Note', () =>{
+    firstNote.seTitle('Nota Actualizada');
+    expect(firstNote.geTitle()).to.be.eql('Nota Actualizada');
+
+    secondNote.setBody('Se ha actualizado el valor de la segunda nota');
+    expect(secondNote.getBody()).to.be.eql('Se ha actualizado el valor de la segunda nota');
+
+    fourthNote.setColor('Yellow');
+    expect(fourthNote.getColor()).to.be.eql('Yellow');
+  });
+});
+
 ```
 <br/><br/>
 
 ### 2.2. Clase User. <a name="id22"></a>
 
-```
-code
-```
+Se ha modificado la clase `User` puesto que antes utilizabamos el módulo lowdb para realizar la gestion de la base de datos. Ahora para realizar este funcionamiento he utilizado los módulos de Node.JS de `fs` y `child_process` para almacenar en directorios y realizar el manejo de la base de datos.
+Esta clase es la encargada de especificar las operaciones que pueden hacer los usuarios en la base de datos, estas operaciones son:
+
+Por un lado, añadir una nueva nota al sistema, esta operacion la realizamos con la funcion `addNote` de la clase User. que recibe el usuario, el titulo, cuerpo y color de la nota. este metodo devolvera un flag, *finish* que comprueba si se ha insertado la nota o no (true o false respectivamente). COmprobamos que exista el usuario en la base de datos a través de **fs.existsSync** en caso de que no exista entonces se crea el fichero del usuario a través de **fs.mkdirSync**, en caso de que exista el usuario en el sistema, simplemente creamos una nueva nota con el titulo, el cuerpo y el color que se ha pasado y comprobamos despues que esta nota no exista en caso de no existir pues escribimos esta nota en formato JSON y en caso de que exista devolvemos el mensaje de error y colocamos a el flag como error, es decir, a false.
+
+Para el caso de querer eliminar una nota (`deleteNote`), operamos de la misma forma que en caso de querer añadir, pero esa¡ta vez tras la comprobamos en caso de que exista el fichero entonces hacemos uso de `fs.rmSync` que elimina un fichero y comprobamos que se ha eliminado. En caso afirmativo devolvemos true en el flag y en caso negativo, false.
+
+Para modificar una nota en el método `modifyNote` comprobamos que exista la nota en la base de datos y creamos una nueva nota que escribimos en la base de datos en formato JSON.
+
+Para leer una nota en la funcion `readNote`, como se ha hecho hasta ahora comprobamos que la nota introducida exista, en caso afirmativo, almacenamos en una variable el contenido de la nota que leemos a través de `fs.readFileSync`, luego lo cambiamos a formato JSON y creamos una nueva nota con los argumentos que acabamos de obtener y devolvemos la nota en el metodo en caso de que surja algún problema, cambiamos el flag a false y lo devolvemos en la funcion indicando que ha sucedido algun error.
+
+Para listar todas las notas de un usuario creamos el método `listNoteUser` el cual devuelve un array de nota. Para buscarlo, comprobamos que existe el directorio del usuario con todas sus notas, posteriormente recorremos todas las carpetas del usuario y sacamos su contenido como se hizo en el caso de leer posteriormente lo colocamos en el formato adecuado, creamos el objeto nota y lo introducimos en la lista de notas y devolvemos esta lista. ç
 
 
+```TypeScript
+import {Note, ColorNotes} from './note';
+import * as fs from 'fs';
+import * as chalk from 'chalk';
+
+export class User {
+
+  constructor() { }
+
+  addNote(user: string, title: string, body: string, Color: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}`) == false) {
+      console.log('Creando el fichero del usuario');
+      fs.mkdirSync(`database/${user}`, {recursive: true});
+    }
+    const nota = new Note(title, body, Color as ColorNotes);
+    if (fs.existsSync(`database/${user}/${title}.json`) == false) {
+      fs.writeFileSync(`database/${user}/${title}.json`, nota.noteToJSON());
+      console.log('Nota creada correctamente!');
+    } else {
+      console.log('La Nota ya existe');
+      finish = false;
+    }
+    return finish;
+  }
+
+  deleteNote(user: string, title: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}/${title}.json`)== true) {
+      fs.rmSync(`database/${user}/${title}.json`);
+      console.log('Nota eliminada correctamente!');
+    } else {
+      console.log('La nota no se ha podido eliminar');
+      finish = false;
+    }
+    return finish;
+  }
+
+  modifyNote(user: string, title: string, bodyToModify: string, colorToModify: string): boolean {
+    let finish: boolean = true;
+    if (fs.existsSync(`database/${user}/${title}.json`) == true) {
+      const nota = new Note(title, bodyToModify, colorToModify as ColorNotes);
+      if (fs.existsSync(`db/${user}/${title}.json`) == false) {
+        fs.writeFileSync(`database/${user}/${title}.json`, nota.noteToJSON());
+        console.log('Nota creada correctamente!');
+      }
+    } else {
+      console.log('No existe la nota a modificar');
+      finish = false;
+    }
+    return finish;
+  }
+
+  readNote(user: string, title: string): Note | boolean {
+    let finish: boolean = false;
+    if (fs.existsSync(`database/${user}/${title}.json`) == true) {
+      const info = fs.readFileSync(`database/${user}/${title}.json`);
+      const notaFormatJson = JSON.parse(info.toString());
+      const nota = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
+      return nota;
+    } else {
+      console.log(`La nota a leer no existe`);
+      finish = true;
+    }
+    return finish;
+  }
+
+  listNoteUser(user: string): Note[] {
+    const listNotes: Note[] = [];
+    fs.readdirSync(`database/${user}`).forEach((nota) => {
+      const content = fs.readFileSync(`database/${user}/${nota}`);
+      const notaFormatJson = JSON.parse(content.toString());
+      const notes = new Note(notaFormatJson.title, notaFormatJson.body, notaFormatJson.color);
+      listNotes.push(notes);
+    });
+    return listNotes;
+  }
+}
+
 ```
-test
+Para la realizacion de los test he creado un usuario denominado `user1` y he probado a utilizar los diferentes métodos y hacer que comprueben en caso de que no existan notas o que se hayan eliminado si se puede operar con esos valores, poniendo a prueba el código desarrollado.
+
+```TypeScript
+import 'mocha';
+import {expect} from 'chai';
+import {Note} from '../src/apiNote/note';
+import {User} from '../src//apiNote/user';
+import * as fs from 'fs';
+
+describe('Test De instancia de User', () => {
+  const user1 = new User();
+  it('Test que comprueba si se puede añadir una nueva nota', () => {
+    user1.addNote('Test', 'TDD', 'Esta es la prueba unitaria de un test', 'Blue');
+    expect(fs.existsSync('database/Test/TDD.json')).true;
+  });
+
+  it('Comprobacion de fallo si la nota ya existe', () => {
+    expect(user1.addNote('Test', 'TDD', 'Esta es la prueba unitaria de un test', 'Blue')).to.be.false;
+  });
+
+  it('Test que comprueba si se puede modificar una nota', () => {
+    user1.modifyNote('Test', 'TDD', 'Se ha modificado el contenido', 'Yellow');
+    expect(fs.existsSync('database/Test/TDD.json')).true;
+    const information = fs.readFileSync('database/Test/TDD.json');
+    expect(information.toString()).to.be.eql('{\n\"title\": \"TDD' + '\",\n\"body\": \"Se ha modificado el contenido'+ '\",\n\"color\": \"Yellow' + '\"\n}');
+  });
+
+  it('Test que comprueba si se puede listar las notas de un usuario', () => {
+    user1.addNote('Test', 'TDD_2', 'Esta es una nota de para probar que se lista', 'Red');
+
+    const nota1 = new Note('TDD', 'Se ha modificado el contenido', 'Yellow');
+    const nota2 = new Note('TDD_2', 'Esta es una nota de para probar que se lista', 'Red');
+    expect(user1.listNoteUser('Test')).to.be.eql([nota1, nota2]);
+  });
+
+  it('Test que comprueba si se puede leer una nota en el sistema', () => {
+    const nota1 = new Note('TDD', 'Se ha modificado el contenido', 'Yellow');
+    expect(user1.readNote('Test', 'TDD')).to.be.eql(nota1);
+  });
+
+  it('Test que comprueba si se puede eliminar una nota del sistema', () => {
+    user1.deleteNote('Test', 'TDD');
+    user1.deleteNote('Test', 'TDD_2');
+
+    expect(fs.existsSync('database/Test/TDD.json')).false;
+    expect(fs.existsSync('db/Test/TDD_2.json')).false;
+  });
+
+  it('Test que comprueba el error al modificar una nota no existente', () => {
+    expect(user1.modifyNote('Test', 'TDD', 'Esta es una nota de prueba modificada', 'Blue')).to.be.false;
+  });
+
+  it('Test que comprueba el error al leer una nota que no existe', () => {
+    expect(user1.readNote('Test', 'TDD')).to.be.true;
+  });
+
+  it('Test que comprueba si da error al eliminar una nota no existente', () => {
+    expect(user1.deleteNote('Test', 'TDD')).to.be.false;
+  });
+});
+
 ```
 
 <br/><br/>
@@ -146,24 +391,42 @@ test
 
 Dentro de las dificultades encontradas dentro de esta práctica, me gustaría resaltar:
 
-* dificultad 1
+* A la hora de visualizar con el color de la nota a través de chalk el color correspondiente, mi idea principal era utilizar el método **keyword** del modulo chalk el cual como primer argumento recibe el color y como segundo el texto, de esta forma podria haber realizado `Chalk.keyword(noteObjet.color)(noteObject.title)` y visualizar de esta forma como quiseramos.
 ```
+TypeError: chalk.keyword is not a function
+    at MessageEventEmitterClient.<anonymous> (/home/usuario/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/dist/client/client.js:58:35)
+    at MessageEventEmitterClient.emit (node:events:526:28)
+    at Socket.<anonymous> (/home/usuario/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408/dist/client/event.js:15:22)
+    at Socket.emit (node:events:526:28)
+    at addChunk (node:internal/streams/readable:324:12)
+    at readableAddChunk (node:internal/streams/readable:297:9)
+    at Socket.Readable.push (node:internal/streams/readable:234:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23)
+
+Node.js v17.5.0
 
 ```
 
-* dificultad 2
+Sin embargo, como se puede ver nos da un error, por ello como solucion implementé un switch analizando el color de la nota y visualizando en un color dado dependiendo de este el titulo y cuerpo, etc... 
+
+* Por si, no he tenido más problemas relacionados con la implementacion puesto que a través de los apuntes de clase y de la teoría buscada se ha resuelto todas las especificaciones que nos solicitaban en las práticas.
 
 ## 4. Conclusión. <a name="id4"></a>
 
 Los objetivos que se han propuesto y se han cumplido son:
 
-* 1
-* 2.
-* 3
-* 4
+* 1. La aplicación de notas deberá permitir que múltiples usuarios interactúen con ella
+* 2. Una nota estará formada, como mínimo, por un título, un cuerpo y un color (rojo, verde, azul o amarillo).
+* 3. Cada usuario tendrá su propia lista de notas, con la que podrá llevar a cabo las siguientes operaciones.
+* 4. Permitira dar añadir, eliminar, modificar, listar, leer.
+* 5. Todos los mensajes informativos se mostrarán con color verde, mientras que los mensajes de error se mostrarán con color rojo. A través de chalk.
+* 6. El servidor es responsable de hacer persistente la lista de notas de cada usuario.
+* 7. Un usuario solo puede interactuar con la aplicación de procesamiento de notas de texto a través de la línea de comandos del cliente. Los diferentes comandos, opciones de los mismos, así como manejadores asociados a cada uno de ellos deben gestionarse mediante el uso del paquete yargs.
 
 
 De esta forma se ha realizado todos estos objetivos a través del uso de clases, y de diversos modulos que aportan funcionalidad como lowdb, chark y yargs.
+
+> Nota: Me gustaría comentar que se ha optado por rediseñar la base de datos puesto que tal y como me comento el profesorado de la asignatura en la práctica 9. No tengo la estructura solicitada en la base de datos. Esto es que en la práctica 9 tenia un fichero con el nombre_del_usuario.json y dentro tenia objetos en formato JSON con las notas de los usuarios. Cuando realmente solicitaban que en la base de datos se encontrarán directorio con el nombre del usuario y dentro de esto diversos fichero que contienen las notas del mismo. Por lo que he decidido rediseñar este directorio `database` y manejarlo a través del módulo `fs (filesystrem)` que proporciona Node.JS.
 
 ## 5. Referencias. <a name="id5"></a>
 1. [Github](http://github.com)
