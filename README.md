@@ -9,6 +9,16 @@
 
 El objetivo de esta práctica es realizar un cliente y servidor que permita manejar y controlar las diferentes peticiones de la práctica 9 encargada de realizar una aplicación de procesamiento de notas de texto, es decir, añadir, eliminar, modificar, leer y listar. Para realizar esto debemos apoyarnos en el módulo `net` de Node.js que nos proporciona los Sockets.
 
+Para ejecutar el código, tras ejecutar el comando tsc en la terminal, Se debe abrir dos terminales diferentes:
+
+* Primero, en una terminal se debe ejecutar el servidor con el siguiente comando:
+`node dist/server/server.js`
+
+* Después en la segunda terminal (2da sesión), ejecutammos el cliente y como opcion por línea de comando la acción que queremos hacer en el sistema, por ejemplo si quisieramos añador una nota nueva:
+
+`node dist/client/client.js add --user="Joel" --title="TituloNota" --body="este es el cuerpo" --color="Red"`
+
+
 > Para acceder al informe de la práctica 11 piche [aquí]()
 
 > Para acceder al informe a través de Github Pages, pinche [aquí]() o acceda a través del siguiente enlace: 

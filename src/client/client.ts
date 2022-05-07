@@ -1,12 +1,20 @@
+/**
+ * Este fichero se encarga de definir la funcionalidad del cliente, en este caso realiza las peticiones al servidor y procesa las respuestas obtenidas
+ */
 import * as yargs from 'yargs';
 import * as chalk from 'chalk';
 import {RequestType} from '../type';
 import {connect} from 'net';
 import {MessageEventEmitterClient} from './event';
-
+/**
+ * Se establece conexión con el metodo connect de net de node.js
+ */
 const client = connect({port: 60300});
 const clientMSEC = new MessageEventEmitterClient(client);
 
+/**
+ * Se gestiona la información obtenida por parte de la clase EventEmitter
+ */
 clientMSEC.on('message', (message)=>{
   switch (message.type) {
     case 'add':
@@ -95,6 +103,17 @@ clientMSEC.on('message', (message)=>{
   }
 });
 
+/**
+ * Interacción del usuario por línea de comando.
+ */
+
+/**
+ * Implementación del comando `add`, se encarga de añadir una nueva nota
+ * @param user usuario que quiere añadir
+ * @param title  titulo de la nota que se quiere añadir
+ * @param body cuerpo que contiene la informacion de la nota que se desea añadir
+ * @param color color de la nota.
+ */
 yargs.command({
   command: 'add',
   describe: 'Añadir una nueva nota al sistema',
@@ -137,6 +156,11 @@ yargs.command({
   },
 });
 
+/**
+ * Implementación del comando `delete`, que se encarga de eliminar una nota existente
+ * @param user usuario que desea realizar el comando
+ * @param title titulo de la nota que se desea eliminar
+ */
 yargs.command({
   command: 'delete',
   describe: 'Elimina una nota del sistema',
@@ -166,6 +190,13 @@ yargs.command({
   },
 });
 
+/**
+ * Implementación del comando `modify` que se encarga de modificar los valores de una nota existente.
+ * @param user usuario que quiere modificar su nota
+ * @param title titulo de la nota que se quiere modificar
+ * @param body nuevo cuerpo que se va a modificar sobre el cuerpo actual de la nota
+ * @param color nuevo color que se va a modificar reemplazando al color actual.
+ */
 yargs.command({
   command: 'modify',
   describe: 'Modificar del cuerpo de nota del sistema',
@@ -208,6 +239,11 @@ yargs.command({
 });
 
 
+/**
+ * Implementación del comando `read` que se encarga de leer la nota de un usuario del sistema.
+ * @param user usuario del que se desea leer la nota
+ * @param title titulo de la nota que se desea leer.
+ */
 yargs.command({
   command: 'read',
   describe: 'Lee una nota del sistema',
@@ -237,7 +273,10 @@ yargs.command({
   },
 });
 
-
+/**
+ * Implementación del comando `list` que se encarga de listar todas las notas de un usuario especifico
+ * @param user usuario del que se desea listar las notas.
+ */
 yargs.command({
   command: 'list',
   describe: 'Lista las notas del usuario',

@@ -1,7 +1,17 @@
 {
 	"entryPoints": [
-		"./src/ejercicio1clase.ts",
-        "./src/name_exercice"
+		"./src/apiNote/note.ts",
+		"./src/apiNote/user.ts",
+
+		"./src/client/client.ts",
+		"./src/client/event.ts",
+
+		"./src/modificacion/cliente.ts",
+		"./src/modificacion/server.ts",
+
+		"./src/server/server.ts",
+
+		"./src/type.ts"
 	], 
 	"out": "./docs/typedoc"
 }

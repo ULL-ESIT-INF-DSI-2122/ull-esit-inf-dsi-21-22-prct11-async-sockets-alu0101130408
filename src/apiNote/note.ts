@@ -68,7 +68,10 @@ export class Note {
   setColor(newColor: ColorNotes): void {
     this.color = newColor;
   }
-
+  /**
+   * Método que transforma a formato JSON una nota
+   * @returns devuelve una nota en formato JSON.
+   */
   noteToJSON():string {
     return '{\n\"title\": \"' + this.title + '\",\n\"body\": \"'+ this.body +
     '\",\n\"color\": \"' + this.color + '\"\n}';

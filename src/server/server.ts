@@ -2,9 +2,16 @@ import * as net from 'net';
 import {ResponseType} from '../type';
 import {User} from '../apiNote/user';
 import chalk from "chalk";
-
+/**
+ * Este fichero contiene la creación y manipulación de eventos por parte del servidor.
+ * Cuando se recibe una petición por parte del cliente, esta se tramita y se invoca al comando correspondiente de la aplicación de nota,
+ * una vez realizado el comando, se envia los resultados al cliente.
+ */
 const noteOption = new User();
 
+/**
+ * Se crea el servidor y se gestiona los eventos recibidos y se emite las respuestas.
+ */
 net.createServer({allowHalfOpen: true}, (connection) => {
   console.log(chalk.bgGreen.white('A client has connected.'));
   let wholeData = '';
@@ -20,8 +27,11 @@ net.createServer({allowHalfOpen: true}, (connection) => {
     }
   });
 
+  /**
+   * Se procesa las respuestas a las peticiones realizadas.
+   */
   connection.on('request', (message) => {
-    console.log(chalk.bgWhite.magenta.bold('Peticion realizada >> ' + message.type));
+    console.log(chalk.bgMagenta.blue.bold('Peticion realizada >> ' + message.type));
     switch (message.type) {
       case 'add': {
         const status = noteOption.addNote(message.user, message.title, message.body, message.color);
@@ -110,7 +120,9 @@ net.createServer({allowHalfOpen: true}, (connection) => {
         break;
     }
   });
-
+  /**
+   * Se informa cuando se cierra la conexión
+   */
   connection.on('close', ()=>{
     console.log((chalk.bgGreen.black('Un cliente ha abandonado la sesión')));
   });
