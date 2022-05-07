@@ -339,49 +339,499 @@ describe('Test De instancia de User', () => {
 
 ### 2.3. Clase Event. <a name="id23"></a>
 
-```
-code
-```
+Esta clase `MessageEventEmmitterClient` Esta clase obtiene como parámetro la conexión que hemos establecido previamente y hereda de EventEmitter. La funcionalidad de esta es recoger todos los trozos de mensaje que se envien al servidor hasta que encontremos el carácter de parada que será \n . Esos trozos son los dataChunk, que se van agrupando en wholeData.
 
+Una vez encontrado ese caracter de salto de línea emitimos un evento que, en este caso hemos denominado message. Este evento emitido será manejado posteriormente en el fichero note.ts. Principalmente el funcionamiento de esta clase es que dado el caso hipotetico de que se envie un mensaje fraccionado, es decir, por partes debido por ejemplo, a que ha habido un error en la conexión entonces se puede obtener los trozos perdido y formar el mensaje completo. 
+
+```TypeScript
+
+import {EventEmitter} from 'events';
+
+export class MessageEventEmitterClient extends EventEmitter {
+  constructor(connection: EventEmitter) {
+    super();
+
+    let wholeData = '';
+    connection.on('data', (dataChunk) => {
+      wholeData += dataChunk;
+
+      let messageLimit = wholeData.indexOf('\n');
+      while (messageLimit !== -1) {
+        const message = wholeData.substring(0, messageLimit);
+        wholeData = wholeData.substring(messageLimit + 1);
+        this.emit('message', JSON.parse(message));
+        messageLimit = wholeData.indexOf('\n');
+      }
+    });
+  }
+}
 
 ```
-test
+Para probar esta clase instanciamos un objeto encargado de la conexión y testeamos que se produzca una petición de tipo `add` en caso de que ocurra esperamos que success de true y que no haya ocurrido ningun error y que al emitir el mensaje nos de por partes este mismo mensaje.
+
+```TypeScript
+import 'mocha';
+import {expect} from 'chai';
+import {EventEmitter} from 'events';
+import {MessageEventEmitterClient} from '../src/client/event';
+
+describe('MessageEventEmitterClient', () => {
+  it('Emision de un mensaje cliente', (done) => {
+    const socket = new EventEmitter();
+    const client = new MessageEventEmitterClient(socket);
+
+    client.on('message', (message) => {
+      expect(message).to.be.eql({'type': 'add', 'success': true});
+      done();
+    });
+
+    socket.emit('data', '{"type": "add"');
+    socket.emit('data', ', "success": true}');
+    socket.emit('data', '\n');
+  });
+});
+
 ```
 
 <br/><br/>
 
 ### 2.4. Fichero Client.ts. <a name="id24"></a>
-```
-code
-```
+
+Para definir el cliente de la aplicación, lo primero es establecer una conexión con el servidor de la API en el puerto **60300** con el método connect de `net`. De esta forma en client se ha almacenado el socket encargado de la comunicación.
+
+Luego con el módulo `yargs` definimos los comandos necesarios para realizar acciones en nuestra aplicación. Estos comando son los mismo que en la práctica 9 y tal y como hemos mencionado anteriormente estos serán añadir, eliminar, modificar, leer y listar notas en el sistema. dentro de estos comandos **yargs** tras analizar previamente que el valor introducido es string, es decir lo que se espera, entonces creamos un objeto JSON que recoge el tipo de peticion y dentro especificamos la información de la peticion que será enviada al servidor. De forma obligatoria tenemos que especificar el tipo de peticion y el usuario que la realiza. Una vez todo esto ha sido definido enviamos a través del comando `write` la peticion, sin embargo, antes debemos cambiar su formato a estring para esto uso el método `stringify` y con el identificador `\n` especificamos que el mensaje de ha terminado, terminando por realizar la parte de petición del patrón `petición-respuesta`. 
+
+Tras haber enviado esta petición se debe esperar a que el servidor la procese y devuelva una respuesta. Esta respuesta se manejará con la clase `MessageEventEmitterClient` que comentamos con anterioridad. Una vez obtenida la respuesta en el evento `message` analizamos el tipo de respuesta devuelto a través de un swtich-case, gracias al atributo *type* de message. Dependiendo del tipo de respuesta entonces mostramos si se ha podido realizar la gestion de las notas o para cada tipo de mensaje leemos la nota o no.
+
+```TypeScript
+import * as yargs from 'yargs';
+import * as chalk from 'chalk';
+import {RequestType} from '../type';
+import {connect} from 'net';
+import {MessageEventEmitterClient} from './event';
+
+const client = connect({port: 60300});
+const clientMSEC = new MessageEventEmitterClient(client);
+
+clientMSEC.on('message', (message)=>{
+  switch (message.type) {
+    case 'add':
+      if (message.success) {
+        console.log(chalk.default.green('Nota añadida'));
+      } else {
+        console.log(chalk.default.red('No se pudo añadir la nota'));
+      }
+      break;
+    case 'delete':
+      if (message.success) {
+        console.log(chalk.default.green('Nota eliminada'));
+      } else {
+        console.log(chalk.default.red('No se puedo eliminar la nota'));
+      }
+      break;
+    case 'modify':
+      if (message.success) {
+        console.log(chalk.default.green('Nota modificada'));
+      } else {
+        console.log(chalk.default.red('No se puedo modificar la nota'));
+      }
+      break;
+    case 'read':
+      if (message.success) {
+        const nota = message.notes[0];
+        const noteObject = JSON.parse(nota);
+
+        switch (noteObject.color) {
+          case 'Red':
+            console.log(chalk.default.red(`title: ` + noteObject.title));
+            console.log(chalk.default.red(`body: ` + noteObject.body));
+            break;
+          case 'Blue':
+            console.log(chalk.default.blue(`title: ` + noteObject.title));
+            console.log(chalk.default.blue(`body: ` + noteObject.body));
+            break;
+          case 'Green':
+            console.log(chalk.default.green(`title: ` + noteObject.title));
+            console.log(chalk.default.green(`body: ` + noteObject.body));
+            break;
+          case 'Yellow':
+            console.log(chalk.default.yellow(`title: ` + noteObject.title));
+            console.log(chalk.default.yellow(`body: ` + noteObject.body));
+            break;
+          default:
+            console.log(` No es un color válido en el sistema`);
+            break;
+        }
+      } else {
+        console.log(chalk.default.red('No se pudo leer la nota'));
+      }
+      break;
+    case 'list':
+      if (message.success) {
+        const info: string[] = message.notes;
+
+        info.forEach( (item) => {
+          const noteObject = JSON.parse(item);
+          switch (noteObject.color) {
+            case 'Red':
+              console.log(chalk.default.red(noteObject.title));
+              break;
+            case 'Blue':
+              console.log(chalk.default.blue(noteObject.title));
+              break;
+            case 'Green':
+              console.log(chalk.default.green(noteObject.title));
+              break;
+            case 'Yellow':
+              console.log(chalk.default.yellow(noteObject.title));
+
+              break;
+            default:
+              console.log(` No es un color válido en el sistema`);
+              break;
+          }
+        });
+      } else {
+        console.log(chalk.default.red('No se pudo listar las notas'));
+      }
+      break;
+    default:
+      console.log(chalk.default.red('No es una opcion soportada'));
+      break;
+  }
+});
+
+yargs.command({
+  command: 'add',
+  describe: 'Añadir una nueva nota al sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+    body: {
+      describe: 'Cuerpo',
+      demandOption: true,
+      type: 'string',
+    },
+    color: {
+      describe: 'Color',
+      demandOption: true,
+      type: 'string',
+    },
+
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string' && typeof argv.body === 'string' && typeof argv.color === 'string') {
+      const inputData: RequestType = {
+        type: 'add',
+        user: argv.user,
+        title: argv.title,
+        body: argv.body,
+        color: argv.color,
+      };
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+yargs.command({
+  command: 'delete',
+  describe: 'Elimina una nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string') {
+      const inputData: RequestType = {
+        type: 'delete',
+        user: argv.user,
+        title: argv.title,
+      };
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+yargs.command({
+  command: 'modify',
+  describe: 'Modificar del cuerpo de nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+    body: {
+      describe: 'Cuerpo',
+      demandOption: true,
+      type: 'string',
+    },
+    color: {
+      describe: 'Color',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string' && typeof argv.body === 'string' && typeof argv.color === 'string') {
+      const inputData: RequestType = {
+        type: 'modify',
+        user: argv.user,
+        title: argv.title,
+        body: argv.body,
+        color: argv.color,
+      };
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
 
 
-```
-test
+yargs.command({
+  command: 'read',
+  describe: 'Lee una nota del sistema',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+    title: {
+      describe: 'Titulo',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string' && typeof argv.title === 'string') {
+      const inputData: RequestType = {
+        type: 'read',
+        user: argv.user,
+        title: argv.title,
+      };
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+
+yargs.command({
+  command: 'list',
+  describe: 'Lista las notas del usuario',
+  builder: {
+    user: {
+      describe: 'Usuario',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    if (typeof argv.user === 'string') {
+      const inputData: RequestType = {
+        type: 'list',
+        user: argv.user,
+      };
+      console.log(chalk.default.grey(`Notas del usuario: ${argv.user}`));
+      client.write(`${JSON.stringify(inputData)}\n`);
+    } else {
+      console.log(chalk.default.red(`Error: Los argumentos no son válidos`));
+    }
+  },
+});
+
+
+yargs.parse();
+
 ```
 
 <br/><br/>
 
 ### 2.5. Fichero Server.ts. <a name="id25"></a>
-```
-code
-```
 
+Para implementación del servidor en el fichero `server.ts`. Primero analizamos si se ha establecido una conexión, en caso de que exista una conexión  y se haya conectado algún cliente tratamos de recoger los fragmentos de mensajes enviados por el cliente. Una vez obtenemos el mensaje del cliente enviamos un evento `request` junto a la información en formato JSON.
 
-```
-test
+A continuación, atendemos el evento Request analizandolo con un `switch-case` en su propiedad `type` que recoge el objeto JSON y dependiendo de lo que se quera hacer realizamos la accion oportuna. Si por ejemplo, se quisiera añadir una nueva nota por parte del cliente en el objeto JSON se deberia de recibir el titulo, cuerpo y color de la nota. Por lo que llamamos a la función `addNote` y le pasamos estos parámetros. En caso de que se haya añadido status contendra un true y en caso negativo un false, en resumen, dirá si se ha realizado el comando sin errores o por otro lado ha surgido algún error.
+
+ Creamos un objeto de tipo `ResponseType` que representa la estructura de que será enviada como respuesta desde parte del servidor. Y dentro de este, establecemos como valores el tipo de accion realizada y el estado de su realización. En caso de que la función devuelva una nota o un listado, tenemos también un atributo formado por un array de strings destinado para almacenarlos. 
+
+ Una vez este tipo de dato ha sido creado lo enviamos al cliente a través del método `write` y al igual que se hizo en el cliente se pasa esta peticion a string a través de `stringfy` seguido de un `\n`. 
+
+ Si al enviar la petición no ha habido ningún error cerramos la conexión del cliente con el servidor. Si el cliente quiere hacer una nueva petición deberá crear una nueva conexión. Con esto ya cumpliriamos la parte de respuesta del patrón petición-respuesta.
+
+```TypeScript
+import * as net from 'net';
+import {ResponseType} from '../type';
+import {User} from '../apiNote/user';
+import chalk from "chalk";
+
+const noteOption = new User();
+
+net.createServer({allowHalfOpen: true}, (connection) => {
+  console.log(chalk.bgGreen.white('A client has connected.'));
+  let wholeData = '';
+  connection.on('data', (dataChunk) => {
+    wholeData += dataChunk;
+
+    let messageLimit = wholeData.indexOf("\n");
+    while (messageLimit !== -1) {
+      const message = wholeData.substring(0, messageLimit);
+      wholeData = wholeData.substring(messageLimit + 1);
+      connection.emit('request', JSON.parse(message));
+      messageLimit = wholeData.indexOf('\n');
+    }
+  });
+
+  connection.on('request', (message) => {
+    console.log(chalk.bgWhite.magenta.bold('Peticion realizada >> ' + message.type));
+    switch (message.type) {
+      case 'add': {
+        const status = noteOption.addNote(message.user, message.title, message.body, message.color);
+        const responseData: ResponseType = {
+          type: 'add',
+          success: status,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
+      }
+        break;
+      case 'delete': {
+        const status = noteOption.deleteNote(message.user, message.title);
+        const responseData: ResponseType = {
+          type: 'delete',
+          success: status,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
+      }
+        break;
+      case 'modify': {
+        const status = noteOption.modifyNote(message.user, message.title, message.body, message.color);
+        const responseData: ResponseType = {
+          type: 'modify',
+          success: status,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
+      }
+        break;
+      case 'read': {
+        const status = noteOption.readNote(message.user, message.title);
+        const responseData: ResponseType = {
+          type: 'read',
+          success: true,
+        };
+        if (typeof status === 'boolean') {
+          responseData.success = false;
+        } else {
+          responseData.notes = [status.noteToJSON()];
+        }
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
+      }
+        break;
+      case 'list': {
+        const salida = noteOption.listNoteUser(message.user);
+        const salidaFormateada: string[]= [];
+        salida.forEach((item) => {
+          salidaFormateada.push(item.noteToJSON());
+        });
+        const responseData: ResponseType = {
+          type: 'list',
+          success: true,
+          notes: salidaFormateada,
+        };
+        connection.write(`${JSON.stringify(responseData)}\n`, (err) => {
+          if (err) {
+            console.error(err);
+          } else {
+            connection.end();
+          }
+        });
+      }
+        break;
+    }
+  });
+
+  connection.on('close', ()=>{
+    console.log((chalk.bgGreen.black('Un cliente ha abandonado la sesión')));
+  });
+}).listen(60300, ()=>{
+  console.log(chalk.bgGreen.black('Esperando un Cliente'));
+});
+
 ```
 
 <br/><br/>
 
 ### 2.6. Fichero Type.ts. <a name="id26"></a>
-```
-code
-```
 
+En este fichero nos encontramos con la definición de dos objetos que implementarán nuestras peticiones en la conexión de cliente-servidor. de esta forma, `RequestType` implementa el tipo de dato para las peticiones del cliente y especifica las operaciones posibles y especifica los parámetros necesarios y aquellos con (**?**) que dependiendo de la petición podrán ser obligatorios o no.  Y en `ResponseType` implementamos la estructura que tendrá una respuesta por parte del servidor.Básicamente devolverá de forma obligatoria el tipo de operacion realizada, un flag que se encargará de determinar si hubo exito en la operacion o no y un array de notas encargado de almacenar las posibles notas. Dependiendo del tipo de operaciones
 
-```
-test
+```TypeScript
+
+export type RequestType = {
+  type: 'add' | 'modify' | 'delete' | 'read' | 'list';
+  user: string;
+  title?: string;
+  body?: string;
+  color?: string;
+}
+
+export type ResponseType = {
+  type: 'add' | 'modify' | 'delete' | 'read' | 'list';
+  success: boolean;
+  notes?: string[];
+}
+
 ```
 
 <br/><br/>
@@ -411,6 +861,8 @@ Sin embargo, como se puede ver nos da un error, por ello como solucion implement
 
 * Por si, no he tenido más problemas relacionados con la implementacion puesto que a través de los apuntes de clase y de la teoría buscada se ha resuelto todas las especificaciones que nos solicitaban en las práticas.
 
+<br/><br/>
+
 ## 4. Conclusión. <a name="id4"></a>
 
 Los objetivos que se han propuesto y se han cumplido son:
@@ -428,10 +880,12 @@ De esta forma se ha realizado todos estos objetivos a través del uso de clases,
 
 > Nota: Me gustaría comentar que se ha optado por rediseñar la base de datos puesto que tal y como me comento el profesorado de la asignatura en la práctica 9. No tengo la estructura solicitada en la base de datos. Esto es que en la práctica 9 tenia un fichero con el nombre_del_usuario.json y dentro tenia objetos en formato JSON con las notas de los usuarios. Cuando realmente solicitaban que en la base de datos se encontrarán directorio con el nombre del usuario y dentro de esto diversos fichero que contienen las notas del mismo. Por lo que he decidido rediseñar este directorio `database` y manejarlo a través del módulo `fs (filesystrem)` que proporciona Node.JS.
 
+<br/><br/>
+
 ## 5. Referencias. <a name="id5"></a>
 1. [Github](http://github.com)
-2. [Repositorio de la Pŕactica](https://github.com/ULL-ESIT-INF-DSI-2122/ull-esit-inf-dsi-21-22-prct09-filesystem-notes-app-alu0101130408.git)
-3. [Guión de la Pŕactica 10](https://ull-esit-inf-dsi-2122.github.io/prct10-async-fs-process/)
+2. [Repositorio de la Pŕactica](https://github.com/ULL-ESIT-INF-DSI-2122/ull-esit-inf-dsi-21-22-prct11-async-sockets-alu0101130408.git)
+3. [Guión de la Pŕactica 11](https://ull-esit-inf-dsi-2122.github.io/prct11-async-sockets/)
 4. [Documentación GitHub Actions](https://docs.github.com/en/actions)
 5. [Documentación Istanbul](https://istanbul.js.org/)
 6. [Documentación Coveralls](https://coveralls.io/)
@@ -454,3 +908,5 @@ De esta forma se ha realizado todos estos objetivos a través del uso de clases,
 23. [Pipe en Node.JS](https://guru99.es/node-js-streams-filestream-pipes/)
 24. [Documentacion de Stream en Node.js](https://nodejs.org/api/stream.html)
 25. [Documentacion de Callbacks](https://nodejs.org/dist/latest/docs/api/fs.html#fs_callback_api)
+26. [Serielización y deserializacion en Node.JS](https://www.estradawebgroup.com/Post/Serializacion-y-deserializacion-JSON-con-C-/4232)
+27. [chalk.keyword uso](https://stackoverflow.com/questions/58389081/typescript-error-when-dynamically-setting-color-for-chalk-package)

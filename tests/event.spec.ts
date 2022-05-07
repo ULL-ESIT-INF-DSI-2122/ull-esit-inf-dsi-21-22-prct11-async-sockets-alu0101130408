@@ -9,12 +9,12 @@ describe('MessageEventEmitterClient', () => {
     const client = new MessageEventEmitterClient(socket);
 
     client.on('message', (message) => {
-      expect(message).to.be.eql({'type': 'add', 'status': true});
+      expect(message).to.be.eql({'type': 'add', 'success': true});
       done();
     });
 
     socket.emit('data', '{"type": "add"');
-    socket.emit('data', ', "status": true}');
+    socket.emit('data', ', "success": true}');
     socket.emit('data', '\n');
   });
 });
